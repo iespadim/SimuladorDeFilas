@@ -30,6 +30,12 @@ public class RNG {
 
     public double nextRandom() {
         seed = (a * seed + c) % m;
+        Main.quantidade--;
         return seed / m ;
+    }
+
+    public int nextRandonBetween(int min, int max) {
+        Main.quantidade--;
+        return (int) (min + (max - min) * nextRandom());
     }
 }
