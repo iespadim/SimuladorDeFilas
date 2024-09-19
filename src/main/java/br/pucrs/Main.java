@@ -33,12 +33,13 @@ public class Main {
         saidaMax = 5;
         tempos = new int[tamanhoMaxFila+1];
 
-        //int inicia o escalonaor de eventos
+        //int inicia o escalonador de eventos
         EscalonadorDeEventos escalonadorDeEventos = new EscalonadorDeEventos();
         escalonadorDeEventos.adicionarEvento(new Chegada(2));
 
         while (quantidade>0){
             IEvento evento = escalonadorDeEventos.proximoEvento();
+            System.out.println("proximo evento: " + evento.getClass().getName() + " - t=" + evento.getTime());
 
            //se o evento for do tipo chegada
             if(evento instanceof Chegada){
@@ -59,7 +60,7 @@ public class Main {
                     tamanhoFila--;
                 }
                 int rng_ = rng.nextRandonBetween(chegadaMin, chegadaMax);
-                escalonadorDeEventos.adicionarEvento(new Saida(globalTime + rng_));
+                escalonadorDeEventos.adicionarEvento(new Chegada(globalTime + rng_));
 
 
             }else if (evento instanceof Saida){
@@ -72,13 +73,15 @@ public class Main {
             }
         }
 
+        System.out.println("Tempo total: " + globalTime);
+        for (int i = 0; i < tempos.length; i++) {
+            System.out.println("Tempo com " + i + " pessoas na fila: " + tempos[i]);
+        }
     }
 
     private static void acumulaTempo(double time) {
         globalTime += time;
         //salva os tempos com a quantidade de pessoas na fila
         tempos[tamanhoFila] += time;
-
-
     }
 }
