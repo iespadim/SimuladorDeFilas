@@ -9,12 +9,13 @@ public class Main {
     static int quantidade, tamanhoFila, tamanhoMaxFila, servidores;
     static int chegadaMin, chegadaMax, saidaMin, saidaMax;
 
+    static int[] tempos ;
     public static void main(String[] args) {
         //inicia o gerador de numeros aleatorios
         RNG rng = new RNG(1664525, 1013904223, 4294967296L);
 
         //int quantidade maxima de numeros a serem gerados
-        quantidade = 10;
+        quantidade = 100;
 
         //int quantidade de servidores
         servidores = 1;
@@ -30,6 +31,7 @@ public class Main {
         chegadaMax = 5;
         saidaMin = 2;
         saidaMax = 5;
+        tempos = new int[tamanhoMaxFila+1];
 
         //int inicia o escalonaor de eventos
         EscalonadorDeEventos escalonadorDeEventos = new EscalonadorDeEventos();
@@ -74,5 +76,9 @@ public class Main {
 
     private static void acumulaTempo(double time) {
         globalTime += time;
+        //salva os tempos com a quantidade de pessoas na fila
+        tempos[tamanhoFila] += time;
+
+
     }
 }

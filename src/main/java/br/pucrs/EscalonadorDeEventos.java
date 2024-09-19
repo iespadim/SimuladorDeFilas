@@ -29,7 +29,7 @@ public class EscalonadorDeEventos {
     public IEvento proximoEvento() {
         ordenaEventosPorTempo();
 
-        System.out.println("Proximo evento: " + eventos.get(0).getClass().getName() + " - t=" + eventos.get(0).getTime());
+        //System.out.println("Proximo evento: " + eventos.get(0).getClass().getName() + " - t=" + eventos.get(0).getTime());
         return eventos.remove(0);
     }
 
