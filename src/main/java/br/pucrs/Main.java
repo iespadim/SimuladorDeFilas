@@ -6,16 +6,17 @@ import br.pucrs.evento.IEvento;
 
 public class Main {
     static int globalTime = 0;
+    static int lastEventTime = 0;
     static int quantidade, tamanhoFila, tamanhoMaxFila, servidores;
     static int chegadaMin, chegadaMax, saidaMin, saidaMax;
 
-    static int[] tempos ;
+    static long[] tempos ;
     public static void main(String[] args) {
         //inicia o gerador de numeros aleatorios
-        RNG rng = new RNG(1664525, 1013904223, 4294967296L);
+        RNG rng = new RNG(1245, 1664525, 1013904223, Math.pow(2, 32));
 
         //int quantidade maxima de numeros a serem gerados
-        quantidade = 100;
+        quantidade = 5;
 
         //int quantidade de servidores
         servidores = 1;
@@ -31,7 +32,7 @@ public class Main {
         chegadaMax = 5;
         saidaMin = 2;
         saidaMax = 5;
-        tempos = new int[tamanhoMaxFila+1];
+        tempos = new long[tamanhoMaxFila+1];
 
         //int inicia o escalonador de eventos
         EscalonadorDeEventos escalonadorDeEventos = new EscalonadorDeEventos();
@@ -39,12 +40,12 @@ public class Main {
 
         while (quantidade>0){
             IEvento evento = escalonadorDeEventos.proximoEvento();
-            System.out.println("proximo evento: " + evento.getClass().getName() + " - t=" + evento.getTime());
 
            //se o evento for do tipo chegada
             if(evento instanceof Chegada){
                 //acumuula o tempo
                 acumulaTempo(evento.getTime());
+                System.out.println("evento acontecendo: " + evento.getClass().getName() + " - t=" + evento.getTime() + " globalTime: " + globalTime);
                 //se a fila for menor que o tamanho maximo da fila
                 if (tamanhoFila < tamanhoMaxFila) {
                     //fila in
@@ -65,6 +66,7 @@ public class Main {
 
             }else if (evento instanceof Saida){
                 acumulaTempo(evento.getTime());
+                System.out.println("evento acontecendo: " + evento.getClass().getName() + " - t=" + evento.getTime() + " globalTime: " + globalTime);
                 if(tamanhoFila>0){tamanhoFila--;}
                 if (tamanhoFila >= servidores){
                     int rng_ = rng.nextRandonBetween(saidaMin, saidaMax);
@@ -79,9 +81,12 @@ public class Main {
         }
     }
 
-    private static void acumulaTempo(double time) {
-        globalTime += time;
-        //salva os tempos com a quantidade de pessoas na fila
-        tempos[tamanhoFila] += time;
+    private static void acumulaTempo(int timeToAdvance) {
+        globalTime += (timeToAdvance); // Acumula o tempo global
+        if (tamanhoFila >= 0 && tamanhoFila < tempos.length) {
+            // Acumula a diferença de tempo desde o último evento
+            tempos[tamanhoFila] += (globalTime - lastEventTime);
+        }
+        lastEventTime = globalTime;
     }
 }

@@ -2,13 +2,14 @@ package br.pucrs.evento;
 
 public class Saida implements IEvento {
 
-    private double time;
+    private int time;
 
-    public Saida(double time) {
+    public Saida(int time) {
         this.time = time;
     }
 
-    public double getTime() {
+    @Override
+    public int getTime() {
         return time;
     }
 }

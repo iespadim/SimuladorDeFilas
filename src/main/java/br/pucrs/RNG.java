@@ -6,7 +6,7 @@ public class RNG {
     private double c;
     private double m;
 
-    public RNG(double a, double c, double m) {
+    public RNG(double seed, double a, double c, double m) {
         if (m <= 0) {
             throw new IllegalArgumentException("Módulo tem que ser positivo");
         }
@@ -23,9 +23,7 @@ public class RNG {
         this.a = a;
         this.c = c;
         this.m = m;
-        this.seed = 65419518;
-
-
+        this.seed = seed;  // Agora passamos a semente no construtor
     }
 
     public double nextRandom() {
