@@ -1,14 +1,20 @@
 package br.pucrs.evento;
 
 public class Chegada implements IEvento{
-    private int arrivalTime;
+    private long arrivalTime;
+    private long saida;
 
-    public Chegada(int time) {
+    public Chegada(long time) {
         this.arrivalTime = time;
     }
 
     @Override
-    public int getTime() {
+    public long getTime() {
         return arrivalTime;
+    }
+
+    @Override
+    public void setSaida(int saida) {
+        this.saida = saida;
     }
 }

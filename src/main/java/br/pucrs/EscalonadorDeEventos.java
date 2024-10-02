@@ -22,7 +22,7 @@ public class EscalonadorDeEventos {
 
 
     public void adicionarEvento(IEvento evento) {
-        System.out.println("Adicionando evento: " + evento.getClass().getName() + " - agendado para t=" + evento.getTime());
+        //System.out.println("Adicionando evento: " + evento.getClass().getName() + " - agendado para t=" + evento.getTime());
         eventos.add(evento);
     }
 

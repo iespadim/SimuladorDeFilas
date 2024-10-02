@@ -5,88 +5,123 @@ import br.pucrs.evento.Saida;
 import br.pucrs.evento.IEvento;
 
 public class Main {
-    static int globalTime = 0;
-    static int lastEventTime = 0;
+    static long globalTime = 0;  // Tempo total da simulação
+    static long lastEventTime = 0;  // Tempo do último evento processado
     static int quantidade, tamanhoFila, tamanhoMaxFila, servidores;
     static int chegadaMin, chegadaMax, saidaMin, saidaMax;
 
-    static long[] tempos ;
+    static long[] tempos;  // Array que acumula o tempo para cada quantidade de pessoas na fila
+
+    // Variáveis para cálculo das métricas
+    static int totalClientesChegaram = 0;
+    static int totalClientesPerdidos = 0;
+    static int totalClientesAtendidos = 0;
+    static long totalTempoAtendimento = 0;  // Tempo total gasto com atendimento
+    static long totalIntervaloEntreChegadas = 0;  // Tempo total entre chegadas de clientes
+    static long tempoUltimaChegada = 0;  // Tempo da última chegada
+
     public static void main(String[] args) {
-        //inicia o gerador de numeros aleatorios
         RNG rng = new RNG(1245, 1664525, 1013904223, Math.pow(2, 32));
 
-        //int quantidade maxima de numeros a serem gerados
-        quantidade = 5;
+        quantidade = 100000;
 
-        //int quantidade de servidores
         servidores = 1;
 
-        //int tamanho maximo da fila
-        tamanhoMaxFila = 10;
+         tamanhoMaxFila = 10;
 
-        //int fila status - quantidade de pessoas na fila
-        tamanhoFila = 0;
+         tamanhoFila = 0;
 
-        //int tempos de chegada e saida min e max
         chegadaMin = 2;
         chegadaMax = 5;
         saidaMin = 2;
         saidaMax = 5;
-        tempos = new long[tamanhoMaxFila+1];
+        tempos = new long[tamanhoMaxFila + 1];
 
-        //int inicia o escalonador de eventos
         EscalonadorDeEventos escalonadorDeEventos = new EscalonadorDeEventos();
         escalonadorDeEventos.adicionarEvento(new Chegada(2));
+        tempoUltimaChegada = 2;  // Primeiro tempo de chegada
 
-        while (quantidade>0){
+        while (quantidade > 0) {
             IEvento evento = escalonadorDeEventos.proximoEvento();
 
-           //se o evento for do tipo chegada
-            if(evento instanceof Chegada){
-                //acumuula o tempo
+
+            if (evento instanceof Chegada) {
                 acumulaTempo(evento.getTime());
-                System.out.println("evento acontecendo: " + evento.getClass().getName() + " - t=" + evento.getTime() + " globalTime: " + globalTime);
-                //se a fila for menor que o tamanho maximo da fila
+                totalClientesChegaram++;  // Incrementa a quantidade de clientes que chegaram
+
+                // Calcula o intervalo entre chegadas
+                totalIntervaloEntreChegadas += (evento.getTime() - tempoUltimaChegada);
+                tempoUltimaChegada = evento.getTime();
+
+                System.out.println("Evento: Chegada - t=" + evento.getTime() + " globalTime: " + globalTime);
+
                 if (tamanhoFila < tamanhoMaxFila) {
-                    //fila in
                     tamanhoFila++;
-                    //se fila <= servidores
-                    if (tamanhoFila <= servidores){
-                        //adiciona um evento de saida
-                        //randon entre saidaMin e saidaMax
+
+                    if (tamanhoFila <= servidores) {
                         int rng_ = rng.nextRandonBetween(saidaMin, saidaMax);
-                        escalonadorDeEventos.adicionarEvento(new Saida(globalTime + rng_));
+                        long saida = globalTime + rng_;
+                        escalonadorDeEventos.adicionarEvento(new Saida(saida));
+                        totalClientesAtendidos++;  // Cliente será atendido imediatamente
                     }
-                }else{
+                } else {
+                    totalClientesPerdidos++;  // Cliente perdido, fila cheia
+                }
+
+                int rng_ = rng.nextRandonBetween(chegadaMin, chegadaMax);
+                long proximaChegada = globalTime + rng_;
+                escalonadorDeEventos.adicionarEvento(new Chegada(proximaChegada));
+                quantidade--;
+
+            } else if (evento instanceof Saida) {
+                acumulaTempo(evento.getTime());
+                System.out.println("Evento: Saida - t=" + evento.getTime() + " globalTime: " + globalTime);
+
+                if (tamanhoFila > 0) {
                     tamanhoFila--;
                 }
-                int rng_ = rng.nextRandonBetween(chegadaMin, chegadaMax);
-                escalonadorDeEventos.adicionarEvento(new Chegada(globalTime + rng_));
 
+                // Calcula o tempo médio de atendimento
+                totalTempoAtendimento += (evento.getTime() - lastEventTime);
 
-            }else if (evento instanceof Saida){
-                acumulaTempo(evento.getTime());
-                System.out.println("evento acontecendo: " + evento.getClass().getName() + " - t=" + evento.getTime() + " globalTime: " + globalTime);
-                if(tamanhoFila>0){tamanhoFila--;}
-                if (tamanhoFila >= servidores){
+                if (tamanhoFila >= servidores) {
                     int rng_ = rng.nextRandonBetween(saidaMin, saidaMax);
-                    escalonadorDeEventos.adicionarEvento(new Saida(globalTime + rng_));
+                    long proximaSaida = globalTime + rng_;
+                    escalonadorDeEventos.adicionarEvento(new Saida(proximaSaida));
+                    totalClientesAtendidos++;  // Cliente será atendido posteriormente
                 }
             }
         }
 
+        // Exibe resultados finais
         System.out.println("Tempo total: " + globalTime);
         for (int i = 0; i < tempos.length; i++) {
             System.out.println("Tempo com " + i + " pessoas na fila: " + tempos[i]);
         }
+
+// Cálculo das métricas
+        double taxaPerdaClientes = (double) totalClientesPerdidos / totalClientesChegaram * 100;
+        double intervaloMedioChegadas = (double) totalIntervaloEntreChegadas / totalClientesChegaram;
+        double tempoMedioAtendimento = (double) totalTempoAtendimento / totalClientesAtendidos;
+
+        System.out.println("\nMétricas da Simulação:");
+        System.out.println("Total de clientes que chegaram: " + totalClientesChegaram);
+        System.out.println("Total de clientes perdidos por superlotação: " + totalClientesPerdidos);
+        System.out.println("Total de clientes atendidos (que saíram do sistema): " + totalClientesAtendidos);
+        System.out.println("Taxa de perda de clientes: " + taxaPerdaClientes + "%");
+        System.out.println("Intervalo médio entre chegadas: " + intervaloMedioChegadas);
+        System.out.println("Tempo médio de atendimento: " + tempoMedioAtendimento);
     }
 
-    private static void acumulaTempo(int timeToAdvance) {
-        globalTime += (timeToAdvance); // Acumula o tempo global
+    private static void acumulaTempo(long timeToAdvance) {
+        // Acumula o tempo global corretamente
+        globalTime = timeToAdvance;
+
         if (tamanhoFila >= 0 && tamanhoFila < tempos.length) {
             // Acumula a diferença de tempo desde o último evento
             tempos[tamanhoFila] += (globalTime - lastEventTime);
         }
+
         lastEventTime = globalTime;
     }
 }
