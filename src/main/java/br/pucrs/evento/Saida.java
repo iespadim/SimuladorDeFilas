@@ -4,9 +4,16 @@ public class Saida implements IEvento {
 
     private long time;
     private long saida;
+    private int idFila;
 
-    public Saida(long time) {
+    public Saida(long time, int idFila) {
         this.time = time;
+        this.idFila = idFila;
+    }
+
+    @Override
+    public int getIdFila() {
+        return idFila;
     }
 
     @Override

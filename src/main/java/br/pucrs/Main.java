@@ -4,13 +4,16 @@ import br.pucrs.evento.Chegada;
 import br.pucrs.evento.Saida;
 import br.pucrs.evento.IEvento;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 public class Main {
     static long globalTime = 0;  // Tempo total da simulação
     static long lastEventTime = 0;  // Tempo do último evento processado
-    static int quantidade, tamanhoFila, tamanhoMaxFila, servidores;
+    static int quantidadeDeSimulacoes, tamanhoFila, tamanhoMaxFila, servidores;
     static int chegadaMin, chegadaMax, saidaMin, saidaMax;
 
-    static long[] tempos;  // Array que acumula o tempo para cada quantidade de pessoas na fila
+    static long[][] tempos;  // Array que acumula o tempo para cada quantidade de pessoas na fila
 
     // Variáveis para cálculo das métricas
     static int totalClientesChegaram = 0;
@@ -20,33 +23,50 @@ public class Main {
     static long totalIntervaloEntreChegadas = 0;  // Tempo total entre chegadas de clientes
     static long tempoUltimaChegada = 0;  // Tempo da última chegada
 
+    //simulacao
+    static EscalonadorDeEventos escalonadorDeEventos;
+
     public static void main(String[] args) {
         RNG rng = new RNG(1245, 1664525, 1013904223, Math.pow(2, 32));
 
-        quantidade = 100000;
+        ArrayList<Fila> filas = new ArrayList<>();
 
+        quantidadeDeSimulacoes = 100000;
+
+        int numeroDeFilas = 1;
+        //fila1
+        int idFila1 = 0;
         servidores = 1;
+        tamanhoMaxFila = 10;
+        tamanhoFila = 0;
 
-         tamanhoMaxFila = 10;
-
-         tamanhoFila = 0;
-
+        // Min and max times for arrivals and departures
         chegadaMin = 2;
         chegadaMax = 5;
         saidaMin = 2;
         saidaMax = 5;
-        tempos = new long[tamanhoMaxFila + 1];
+        tempos = new long[numeroDeFilas+1][tamanhoMaxFila + 1];
 
-        EscalonadorDeEventos escalonadorDeEventos = new EscalonadorDeEventos();
-        escalonadorDeEventos.adicionarEvento(new Chegada(2));
+        //simulaçao 1
+        // clientes -> fila1 -> saída
+        //instancia uma fila
+        Fila fila1 = new Fila(idFila1, tamanhoMaxFila,servidores);
+        fila1.eventos = new ArrayList<>();
+        filas.add(fila1);
+
+
+        // Start the event scheduler
+        escalonadorDeEventos = new EscalonadorDeEventos(filas);
+        escalonadorDeEventos.adicionarEvento(fila1, new Chegada(2, idFila1));
         tempoUltimaChegada = 2;  // Primeiro tempo de chegada
 
-        while (quantidade > 0) {
+        while (quantidadeDeSimulacoes > 0) {
             IEvento evento = escalonadorDeEventos.proximoEvento();
 
 
             if (evento instanceof Chegada) {
-                acumulaTempo(evento.getTime());
+                fila1.adicionarCliente();
+                acumulaTempo(evento);
                 totalClientesChegaram++;  // Incrementa a quantidade de clientes que chegaram
 
                 // Calcula o intervalo entre chegadas
@@ -61,7 +81,7 @@ public class Main {
                     if (tamanhoFila <= servidores) {
                         int rng_ = rng.nextRandonBetween(saidaMin, saidaMax);
                         long saida = globalTime + rng_;
-                        escalonadorDeEventos.adicionarEvento(new Saida(saida));
+                        escalonadorDeEventos.adicionarEvento(fila1,new Saida(saida, idFila1));
                         totalClientesAtendidos++;  // Cliente será atendido imediatamente
                     }
                 } else {
@@ -70,11 +90,12 @@ public class Main {
 
                 int rng_ = rng.nextRandonBetween(chegadaMin, chegadaMax);
                 long proximaChegada = globalTime + rng_;
-                escalonadorDeEventos.adicionarEvento(new Chegada(proximaChegada));
-                quantidade--;
+                escalonadorDeEventos.adicionarEvento(fila1,new Chegada(proximaChegada, idFila1));
+                quantidadeDeSimulacoes--;
 
             } else if (evento instanceof Saida) {
-                acumulaTempo(evento.getTime());
+                fila1.removerCliente();
+                acumulaTempo(evento);
                 System.out.println("Evento: Saida - t=" + evento.getTime() + " globalTime: " + globalTime);
 
                 if (tamanhoFila > 0) {
@@ -87,7 +108,7 @@ public class Main {
                 if (tamanhoFila >= servidores) {
                     int rng_ = rng.nextRandonBetween(saidaMin, saidaMax);
                     long proximaSaida = globalTime + rng_;
-                    escalonadorDeEventos.adicionarEvento(new Saida(proximaSaida));
+                    escalonadorDeEventos.adicionarEvento(fila1,new Saida(proximaSaida,idFila1));
                     totalClientesAtendidos++;  // Cliente será atendido posteriormente
                 }
             }
@@ -95,8 +116,11 @@ public class Main {
 
         // Exibe resultados finais
         System.out.println("Tempo total: " + globalTime);
-        for (int i = 0; i < tempos.length; i++) {
-            System.out.println("Tempo com " + i + " pessoas na fila: " + tempos[i]);
+        for (int i = 0; i < filas.size(); i++) {
+            System.out.println("Fila " + i + ":");
+            for (int j = 0; j < tempos[i].length; j++) {
+                System.out.println("Tempo acumulado para " + j + " pessoas na fila: " + tempos[i][j]);
+            }
         }
 
 // Cálculo das métricas
@@ -113,15 +137,28 @@ public class Main {
         System.out.println("Tempo médio de atendimento: " + tempoMedioAtendimento);
     }
 
-    private static void acumulaTempo(long timeToAdvance) {
-        // Acumula o tempo global corretamente
-        globalTime = timeToAdvance;
 
-        if (tamanhoFila >= 0 && tamanhoFila < tempos.length) {
-            // Acumula a diferença de tempo desde o último evento
-            tempos[tamanhoFila] += (globalTime - lastEventTime);
+
+    private static void acumulaTempo(IEvento evento) {
+        long timeToAdvance = evento.getTime();
+
+        // Obtenha a fila relacionada ao evento
+        Fila fila = escalonadorDeEventos.getFilaById(evento.getIdFila());
+
+        // Calcula a diferença de tempo desde o último evento específico para esta fila
+        long filaLastEventTime = fila.getLastEventTime();  // Tempo do último evento desta fila
+        int tamanhoAtualFila = fila.getTamanhoAtual();  // Obtém o tamanho atual da fila
+
+        // Acumula o tempo de acordo com o tamanho da fila atual
+        if (tamanhoAtualFila >= 0 && tamanhoAtualFila < tempos[fila.getId()].length) {
+            // Acumula o tempo corretamente apenas para esta fila
+            tempos[fila.getId()][tamanhoAtualFila] += (timeToAdvance - filaLastEventTime);
         }
 
-        lastEventTime = globalTime;
+        // Atualiza o tempo do último evento processado para esta fila
+        fila.setLastEventTime(timeToAdvance);
+
+        // Atualiza o tempo global
+        globalTime = timeToAdvance;
     }
 }

@@ -7,33 +7,65 @@ import java.util.ArrayList;
 public class EscalonadorDeEventos {
 
     static EscalonadorDeEventos instance;
-    static ArrayList<IEvento> eventos;
+    static ArrayList<Fila> filas;
 
-    EscalonadorDeEventos() {
+    EscalonadorDeEventos(ArrayList<Fila> filas) {
         if (instance != null) {
             throw new IllegalStateException("Já existe uma instância de EscalonadorDeEventos");
         } else {
             instance = this;
-            eventos = new ArrayList<IEvento>();
+            EscalonadorDeEventos.filas = filas;
         }
     }
 
 
+    public void adicionarEvento(Fila fila,IEvento evento) {
+        System.out.println("agend: " + evento.getClass().getName() + " - para t=" + evento.getTime()+ " - na fila: " + fila.getClass().getName());
 
-
-    public void adicionarEvento(IEvento evento) {
-        //System.out.println("Adicionando evento: " + evento.getClass().getName() + " - agendado para t=" + evento.getTime());
-        eventos.add(evento);
+        //find fila in filas
+        if (filas.contains(fila)) {
+            //add evento to fila
+            fila.eventos.add(evento);
+        } else {
+            throw new IllegalArgumentException("Fila não encontrada");
+        }
     }
 
     public IEvento proximoEvento() {
-        ordenaEventosPorTempo();
 
-        //System.out.println("Proximo evento: " + eventos.get(0).getClass().getName() + " - t=" + eventos.get(0).getTime());
-        return eventos.remove(0);
+        if(!filas.isEmpty()) {
+            for (Fila fila : filas) {
+                ordenaEventosPorTempo(fila);
+            }
+        }else {
+            throw new IllegalArgumentException("Não há filas para processar");
+        }
+
+
+        //find nearest event in all filas
+        IEvento closestEvent = null;
+        Fila closestEventFila = null;
+
+        for(Fila fila : filas){
+            if(!fila.eventos.isEmpty()){
+                IEvento evento = fila.eventos.get(0);
+
+                if (closestEvent == null) {
+                    closestEvent = evento;
+                    closestEventFila = fila;
+                } else {
+                    if (evento.getTime() < closestEvent.getTime()) {
+                        closestEvent = evento;
+                        closestEventFila = fila;
+                    }
+                }
+            }
+        }
+        return closestEventFila.eventos.remove(0);
     }
 
-    private void ordenaEventosPorTempo() {
+    private void ordenaEventosPorTempo(Fila fila) {
+        ArrayList<IEvento> eventos = fila.eventos;
         //sort eventos by time
         for (int i = 0; i < eventos.size(); i++) {
                for (int j = 0; j < eventos.size(); j++) {
@@ -44,5 +76,15 @@ public class EscalonadorDeEventos {
                     }
                 }
         }
+    }
+
+    public Fila getFilaById(int id){
+        for(Fila fila : filas){
+            if(fila.getId() == id){
+                return fila;
+            }
+        }
+        System.out.println("Fila não encontrada");
+        return null;
     }
 }
