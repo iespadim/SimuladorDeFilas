@@ -9,12 +9,12 @@ public class EscalonadorDeEventos {
     static EscalonadorDeEventos instance;
     static ArrayList<Fila> filas;
 
-    EscalonadorDeEventos(ArrayList<Fila> filas) {
+    EscalonadorDeEventos() {
         if (instance != null) {
             throw new IllegalStateException("Já existe uma instância de EscalonadorDeEventos");
         } else {
             instance = this;
-            EscalonadorDeEventos.filas = filas;
+            filas = new ArrayList<>();
         }
     }
 
@@ -31,7 +31,9 @@ public class EscalonadorDeEventos {
         }
     }
 
-    public IEvento proximoEvento() {
+
+
+    public IEvento removeProximoEvento() {
 
         if(!filas.isEmpty()) {
             for (Fila fila : filas) {
@@ -86,5 +88,12 @@ public class EscalonadorDeEventos {
         }
         System.out.println("Fila não encontrada");
         return null;
+    }
+
+    public void adicionarFila(Fila fila1) {
+        if (getFilaById(fila1.getId()) != null){
+            throw new IllegalArgumentException("Fila já existe");
+        }
+        filas.add(fila1);
     }
 }
