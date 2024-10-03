@@ -7,14 +7,15 @@ import br.pucrs.evento.IEvento;
 public class Main {
     static long globalTime = 0;  // Tempo total da simulação
     static int quantidadeDeSimulacoes;
+    static RNG rng;
 
     // Simulacao
     static EscalonadorDeEventos escalonadorDeEventos;
 
     public static void main(String[] args) {
         // Config
-        RNG rng = new RNG(1245, 1664525, 1013904223, Math.pow(2, 32));
-        quantidadeDeSimulacoes = 50;
+        rng = new RNG(1245, 1664525, 1013904223, Math.pow(2, 32));
+        quantidadeDeSimulacoes = 100000;
         int tempoDaPrimeiraChegada = 2;
 
         // Start filas
@@ -30,58 +31,63 @@ public class Main {
         // Main loop
         while (quantidadeDeSimulacoes > 0) {
             IEvento evento = escalonadorDeEventos.removeProximoEvento();
-            Fila fila = escalonadorDeEventos.getFilaById(evento.getIdFila());
-
             sincronizaGlobalTimerComTempoDoEvento(evento);
 
             if (evento instanceof Chegada) {
-                // Chegada
-                fila.totalClientesChegaram++;
-
-                fila.totalIntervaloEntreChegadas += (evento.getTime() - fila.tempoUltimaChegada);
-                fila.setLastEventTime(evento.getTime());
-
-                System.out.println("Evento: Chegada - t=" + evento.getTime() + " globalTime: " + globalTime);
-
-                if (fila.temEspaco()) {
-                    fila.adicionarCliente();
-
-                    if (fila.prontoParaAtendimentoImediato()) {
-                        int rng_ = rng.nextRandonBetween(fila.saidaMin, fila.saidaMax);
-                        long saida = globalTime + rng_;
-                        escalonadorDeEventos.adicionarEvento(fila, new Saida(saida, fila.getId()));
-                        fila.totalClientesAtendidos++;
-                    }
-                } else {
-                    fila.totalClientesPerdidos++;
-                }
-
-                int rng_ = rng.nextRandonBetween(fila.chegadaMin, fila.chegadaMax);
-                long proximaChegada = globalTime + rng_;
-                escalonadorDeEventos.adicionarEvento(fila, new Chegada(proximaChegada, fila.getId()));
-                quantidadeDeSimulacoes--;
+                chegada(evento);
             }else if (evento instanceof Saida) {
-                // Saída
-                fila.removerCliente();
-                System.out.println("Evento: Saida - t=" + evento.getTime() + " globalTime: " + globalTime);
-
-                if (!fila.estaVazia()) {
-                    fila.removerCliente();
-                }
-
-                fila.totalTempoAtendimento += (evento.getTime() - fila.getLastEventTime());
-
-                if (fila.temGenteEsperando()) {
-                    int rng_ = rng.nextRandonBetween(fila.saidaMin, fila.saidaMax);
-                    long proximaSaida = globalTime + rng_;
-                    escalonadorDeEventos.adicionarEvento(fila, new Saida(proximaSaida, fila.getId()));
-                    fila.totalClientesAtendidos++;
-                }
-
+                saida(evento);
             }
         }
 
         imprimeResultados();
+    }
+
+    private static void saida(IEvento evento) {
+        System.out.println("Evento: Saida - t=" + evento.getTime() + " globalTime: " + globalTime);
+        Fila fila = escalonadorDeEventos.getFilaById(evento.getIdFila());
+
+        if (!fila.estaVazia()) {
+            fila.removerCliente();
+        }
+
+        fila.totalTempoAtendimento += (evento.getTime() - fila.getLastEventTime());
+
+        if (fila.temGenteEsperando()) {
+            int rng_ = rng.nextRandonBetween(fila.saidaMin, fila.saidaMax);
+            long proximaSaida = globalTime + rng_;
+            escalonadorDeEventos.adicionarEvento(fila, new Saida(proximaSaida, fila.getId()));
+            fila.totalClientesAtendidos++;
+        }
+    }
+
+    private static void chegada(IEvento evento) {
+        Fila fila = escalonadorDeEventos.getFilaById(evento.getIdFila());
+        // Chegada
+        fila.totalClientesChegaram++;
+
+        fila.totalIntervaloEntreChegadas += (evento.getTime() - fila.tempoUltimaChegada);
+        fila.setLastEventTime(evento.getTime());
+
+        System.out.println("Evento: Chegada - t=" + evento.getTime() + " globalTime: " + globalTime);
+
+        if (fila.temEspaco()) {
+            fila.adicionarCliente();
+
+            if (fila.prontoParaAtendimentoImediato()) {
+                int rng_ = rng.nextRandonBetween(fila.saidaMin, fila.saidaMax);
+                long saida = globalTime + rng_;
+                escalonadorDeEventos.adicionarEvento(fila, new Saida(saida, fila.getId()));
+                fila.totalClientesAtendidos++;
+            }
+        } else {
+            fila.totalClientesPerdidos++;
+        }
+
+        int rng_ = rng.nextRandonBetween(fila.chegadaMin, fila.chegadaMax);
+        long proximaChegada = globalTime + rng_;
+        escalonadorDeEventos.adicionarEvento(fila, new Chegada(proximaChegada, fila.getId()));
+        quantidadeDeSimulacoes--;
     }
 
     private static void imprimeResultados() {
