@@ -13,25 +13,41 @@ simulacao:
   parametros_filas:
     # fila numero 1
     - id: 1  # id da fila
-      tamanho_max: 10 # tamanho maximo da fila
+      tamanho_max: 100 # tamanho maximo da fila
       servidores: 1 # quantidade de servidores
       chegada_min: 2 # tempo minimo de chegada
-      chegada_max: 5 # tempo maximo de chegada
-      saida_min: 2 # tempo minimo de saida
-      saida_max: 5 # tempo maximo de saida
+      chegada_max: 4 # tempo maximo de chegada
+      saida_min: 1 # tempo minimo de saida
+      saida_max: 2 # tempo maximo de saida
 
       destinos:
-        - [ -1, 1 ]  # 100% de chance do cliente sair do sistema
-        #- [ 2, 0.5 ]   # 50% de chance de ir para a fila 2
+        - [ 2, 0.8 ]  # 80% de chance do cliente ir pra fila 2
+        - [ 3, 0.2 ]
+        # -1 cliente sair do sistema
 
     # fila numero 2
-#    - id: 2  # id da fila
-#      tamanho_max: 10 # tamanho maximo da fila
-#      servidores: 1 # quantidade de servidores
-#      chegada_min: 2 # tempo minimo de chegada
-#      chegada_max: 5 # tempo maximo de chegada
-#      saida_min: 2 # tempo minimo de saida
-#      saida_max: 5 # tempo maximo de saida
-#
-#      destinos:
-#        - [ -1, 1.0 ]  # 100% de chance de sair do sistema
+    - id: 2  # id da fila
+      tamanho_max: 5 # tamanho maximo da fila
+      servidores: 2 # quantidade de servidores
+      chegada_min: 0 # tempo minimo de chegada
+      chegada_max: 0 # tempo maximo de chegada
+      saida_min: 4 # tempo minimo de saida
+      saida_max: 8 # tempo maximo de saida
+
+      destinos:
+        - [ 1, 0.3 ]
+        - [ 2, 0.5 ]
+        - [ -1, 0.2 ]
+
+    # fila numero 3
+    - id: 3  # id da fila
+      tamanho_max: 10 # tamanho maximo da fila
+      servidores: 2 # quantidade de servidores
+      chegada_min: 0 # tempo minimo de chegada
+      chegada_max: 0 # tempo maximo de chegada
+      saida_min: 5 # tempo minimo de saida
+      saida_max: 15 # tempo maximo de saida
+
+      destinos:
+        - [ -1, 0.3 ]
+        - [ 3, 0.7 ]
