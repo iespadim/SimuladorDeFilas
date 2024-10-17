@@ -203,8 +203,7 @@ public class Main {
                             escalonadorDeEventos.adicionarEvento(escalonadorDeEventos.getFilaById(i), new Passagem(globalTime,fila.getId(), i));
                             System.out.println("Cliente foi pra fila " + i);
                         } else {
-                            escalonadorDeEventos.adicionarEvento(escalonadorDeEventos.getFilaById(i), new Saida(globalTime,fila.getId()));
-                            System.out.println("Cliente saiu do sistema");
+                            System.out.println("Cliente saiu do sistema pela saida da fila " + fila.getId());
                         }
                         break;
                     }

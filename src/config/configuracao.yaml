@@ -1,6 +1,6 @@
 simulacao:
   # quantidade de numeros aleatórios a serem gerados
-  quantidade_de_simulacoes: 1000
+  quantidade_de_simulacoes: 150
   tempo_prmeiro_evento: 2
   fila_primeiro_evento: 1
 
