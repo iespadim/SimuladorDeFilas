@@ -7,13 +7,20 @@ public class Chegada implements IEvento{
 
     public Chegada(long time, int idFila) {
         this.arrivalTime = time;
+        this.idFila = idFila;
 
     }
 
     @Override
     public int getIdFila() {
-        return 0;
+        return idFila;
+
     }
+
+    public long getSaida() {
+        return saida;
+    }
+
 
     @Override
     public long getTime() {

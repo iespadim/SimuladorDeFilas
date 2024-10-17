@@ -3,6 +3,7 @@ package br.pucrs;
 import br.pucrs.evento.IEvento;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Fila {
     private final int sevidores;
@@ -12,6 +13,7 @@ public class Fila {
     private long lastEventTime;
     public ArrayList<IEvento> eventos;
     public ArrayList<Long> tempos;  // Lista de tempos por tamanho de fila
+    public HashMap<Integer, Double> destinos;
 
     // Variáveis para cálculo das métricas
     int totalClientesChegaram = 0;
@@ -27,7 +29,8 @@ public class Fila {
     int saidaMin;
     int saidaMax;
 
-    public Fila(int idFila, int tamanhoMaximo, int servidores, int chegadaMin, int chegadaMax, int saidaMin, int saidaMax) {
+    public Fila(int idFila, int tamanhoMaximo, int servidores,
+                int chegadaMin, int chegadaMax, int saidaMin, int saidaMax, HashMap<Integer, Double> destinos ) {
         this.idFila = idFila;
         this.tamanhoMaximo = tamanhoMaximo;
         this.tamanhoAtual = 0;
@@ -36,6 +39,8 @@ public class Fila {
         this.saidaMin = saidaMin;
         this.saidaMax = saidaMax;
         this.sevidores = servidores;
+        this.destinos = destinos;
+
         lastEventTime = 0;
         eventos = new ArrayList<>();
         tempos = new ArrayList<>();
@@ -49,6 +54,7 @@ public class Fila {
             tamanhoAtual++;
             return true;  // Cliente adicionado com sucesso
         } else {
+            System.out.println("Fila "+ idFila +" cheia, cliente não adicionado");
             return false;  // Fila cheia, cliente não adicionado
         }
     }
@@ -72,7 +78,7 @@ public class Fila {
     }
 
     public boolean temGenteEsperando() {
-        return tamanhoAtual > 0;
+        return tamanhoAtual > sevidores;
     }
 
     public int getTamanhoAtual() {

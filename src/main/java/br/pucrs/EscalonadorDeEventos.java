@@ -86,14 +86,15 @@ public class EscalonadorDeEventos {
                 return fila;
             }
         }
-        System.out.println("Fila não encontrada");
+        System.out.println("Fila "+ id+ " não encontrada");
         return null;
     }
 
     public void adicionarFila(Fila fila1) {
         if (getFilaById(fila1.getId()) != null){
             throw new IllegalArgumentException("Fila já existe");
+        } else {
+            filas.add(fila1);
         }
-        filas.add(fila1);
     }
 }

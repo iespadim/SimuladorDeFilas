@@ -1,0 +1,37 @@
+simulacao:
+  # quantidade de numeros aleatórios a serem gerados
+  quantidade_de_simulacoes: 1000
+  tempo_prmeiro_evento: 2
+  fila_primeiro_evento: 1
+
+  # configuracao do gerador de numeros aleatorios
+  semente_rng: 1245
+  a_rng: 1664525
+  c_rng: 1013904223
+  m_rng: 4294967296 #2^32
+
+  parametros_filas:
+    # fila numero 1
+    - id: 1  # id da fila
+      tamanho_max: 10 # tamanho maximo da fila
+      servidores: 1 # quantidade de servidores
+      chegada_min: 2 # tempo minimo de chegada
+      chegada_max: 5 # tempo maximo de chegada
+      saida_min: 2 # tempo minimo de saida
+      saida_max: 5 # tempo maximo de saida
+
+      destinos:
+        - [ -1, 1 ]  # 100% de chance do cliente sair do sistema
+        #- [ 2, 0.5 ]   # 50% de chance de ir para a fila 2
+
+    # fila numero 2
+#    - id: 2  # id da fila
+#      tamanho_max: 10 # tamanho maximo da fila
+#      servidores: 1 # quantidade de servidores
+#      chegada_min: 2 # tempo minimo de chegada
+#      chegada_max: 5 # tempo maximo de chegada
+#      saida_min: 2 # tempo minimo de saida
+#      saida_max: 5 # tempo maximo de saida
+#
+#      destinos:
+#        - [ -1, 1.0 ]  # 100% de chance de sair do sistema
